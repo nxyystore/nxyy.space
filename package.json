@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "dev": "bun next dev",
+    "build": "bun next build",
+    "start": "bun next start"
   },
   "dependencies": {
     "@types/node-fetch": "^2.6.13",
