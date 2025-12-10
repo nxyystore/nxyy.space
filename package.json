@@ -1,0 +1,26 @@
+{
+  "name": "aelix",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@types/node-fetch": "^2.6.13",
+    "framer-motion": "12.23.24",
+    "next": "latest",
+    "node-fetch": "^2.7.0",
+    "react": "latest",
+    "react-countup": "^6.5.3",
+    "react-dom": "latest",
+    "sass": "^1.93.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "latest"
+  }
+}
