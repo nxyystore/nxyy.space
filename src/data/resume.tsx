@@ -16,7 +16,7 @@ export const DATA = {
 	summary:
 		"at [**nxyy.space**](https://nxyy.space), we build modern, high-performance software that invokes innovation, design and production-readiness. From advanced Discord bots to full-stack web applications, we focus on creating seamless, impactful user experiences.",
 	avatarUrl: (theme: string) =>
-		theme === "dark" ? logo_256x256.src : i_logo_256x256.src,
+		theme === "dark" ? "/avatar-dark.png" : "/avatar-light.png",
 	skills: [
 		{ name: "TypeScript", icon: "typescript" },
 		{ name: "JavaScript", icon: "javascript" },
