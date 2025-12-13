@@ -38,7 +38,7 @@ export default function Footer() {
             className="flex items-center gap-3 text-sm font-medium"
             aria-label="nxyy.space"
           >
-            <Image
+            {/*<Image
               src={
                 (resolvedTheme || "dark") === "dark"
                   ? logo_256x256
@@ -50,7 +50,7 @@ export default function Footer() {
               className="w-6 h-6"
               draggable={false}
               onDragStart={handleDragStart}
-            />
+            />/*/}
             <span>nxyy.space</span>
           </a>
         </BlurFade>
