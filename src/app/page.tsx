@@ -1,201 +1,249 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import styles from "../styles/Home.module.scss";
-import TeamModal from "../components/TeamModal";
-import { TeamMember, ProjectStats } from "../types";
-import { egirlsStatus, WarmStatus } from "../types/api";
-import Navbar from "../components/Navbar";
-import { motion } from "framer-motion";
-import { teamMembers as initialTeamMembers } from "@/lib/constants";
-import { useLanyard } from "@/hooks/useLanyard";
+import BlurFade from "@/components/magicui/blur-fade";
+import BlurFadeText from "@/components/magicui/blur-fade-text";
+import { ProjectCard } from "@/components/project-card";
+import { Badge } from "@/components/ui/badge";
+import { SparklesText } from "@/components/ui/sparkles-text";
+import LanyardAvatar from "@/components/LanyardAvatar";
+import Footer from "@/components/Footer";
+import { DATA } from "@/data/resume";
+import { useColor } from "@/context/ColorContext";
+import { useTheme } from "next-themes";
+import { TeamMemberCard } from "@/components/TeamMemberCard";
+import { TEAM_MEMBERS } from "@/lib/users";
+import { useDiscord } from "@/context/DiscordContext";
 
-const TeamMemberCard = ({
-	member,
-	onClick,
-	index,
-}: {
-	member: TeamMember;
-	onClick: () => void;
-	index: number;
-}) => {
-	const lanyardData = useLanyard(member.id);
+import Markdown from "react-markdown";
 
-	const avatarUrl = lanyardData?.discord_user.avatar
-		? `https://cdn.discordapp.com/avatars/${member.id}/${lanyardData.discord_user.avatar}.png?size=1024`
-		: "https://cdn.discordapp.com/embed/avatars/0.png";
+const BLUR_FADE_DELAY = 0.04;
 
-	return (
-		<motion.div
-			key={member.name}
-			className={styles.teamMember}
-			onClick={onClick}
-			initial={{ opacity: 0, y: 20 }}
-			whileInView={{ opacity: 1, y: 0 }}
-			viewport={{ once: true, amount: 0.5 }}
-			transition={{ duration: 0.5, delay: index * 0.1 }}
-		>
-			<img src={avatarUrl} alt={member.name} />
-			<h3>{lanyardData?.discord_user.global_name || member.name}</h3>
-			<p>{member.role}</p>
-		</motion.div>
-	);
-};
+export default function Page() {
+  const { palette } = useColor();
+  const { theme } = useTheme();
+  const { teamPresences } = useDiscord();
 
-export default function Home() {
-	const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
-	const [teamMembers, setTeamMembers] =
-		useState<TeamMember[]>(initialTeamMembers);
-	const [projectStats, setProjectStats] = useState<ProjectStats>({});
+  const getThemeBorderStyle = () => {
+    const baseBorder =
+      theme === "dark" ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.15)";
 
-	useEffect(() => {
-		const fetchStatus = async () => {
-			try {
-				const [warmResponse, egirlsResponse] = await Promise.all([
-					fetch("/api/warm"),
-					fetch("/api/egirls"),
-				]);
+    if (!palette) {
+      return {
+        borderColor: baseBorder,
+      };
+    }
 
-				const warmData: WarmStatus = await warmResponse.json();
-				const egirlsData: egirlsStatus = await egirlsResponse.json();
+    return {
+      borderColor: `rgba(${palette.primary.join(",")}, ${
+        theme === "dark" ? "0.5" : "0.4"
+      })`,
+    };
+  };
 
-				setProjectStats({
-					"e-girls": {
-						users: egirlsData.users,
-						used_storage: egirlsData.storageUsedGB,
-					},
-					warm: { users: warmData.total_users, servers: warmData.total_guilds },
-				});
-			} catch (error) {
-				console.error("Error fetching status:", error);
-			}
-		};
+  return (
+    <main className="flex flex-col min-h-[100dvh] space-y-2">
+      <section id="hero">
+        <div className="mx-auto w-full max-w-2xl space-y-8">
+          <div className="gap-2 flex justify-between">
+            <div className="flex-col flex flex-1 space-y-1.5">
+              <BlurFadeText
+                delay={BLUR_FADE_DELAY}
+                className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none"
+                yOffset={8}
+                text={`nxyy.space`}
+              />
+              <BlurFadeText
+                className="max-w-[600px] md:text-xl"
+                delay={BLUR_FADE_DELAY}
+                text={DATA.description}
+              />
+              <div className="flex select-none items-center w-full relative">
+                <div className="flex gap-0.5">
+                  {Object.entries(DATA.contact.social).map(
+                    ([name, social], id) => {
+                      const Icon = social.icon;
+                      return (
+                        <BlurFade
+                          key={name}
+                          delay={BLUR_FADE_DELAY * 2 + id * 0.05}
+                        >
+                          <a
+                            href={social.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center rounded-full p-1 hover:bg-muted transition overflow-visible"
+                            aria-label={name}
+                          >
+                            <Icon
+                              className="w-5 h-5"
+                              style={{ shapeRendering: "geometricPrecision" }}
+                            />
+                          </a>
+                        </BlurFade>
+                      );
+                    }
+                  )}
+                </div>
+              </div>
+            </div>
+            <BlurFade delay={BLUR_FADE_DELAY}>
+              <LanyardAvatar />
+            </BlurFade>
+          </div>
+        </div>
+      </section>
+      <section id="about">
+        <BlurFade delay={BLUR_FADE_DELAY * 3}>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">about us</h2>
+          </div>
+        </BlurFade>
+        <BlurFade delay={BLUR_FADE_DELAY * 4}>
+          <Markdown className="prose max-w-full text-pretty font-sans text-sm text-muted-foreground dark:prose-invert">
+            {DATA.summary}
+          </Markdown>
+        </BlurFade>
+      </section>
+      {/* <section id="skills">
+        <div className="flex min-h-0 flex-col gap-y-3">
+          <BlurFade delay={BLUR_FADE_DELAY * 9}>
+            <h2 className="text-xl font-bold">skills</h2>
+          </BlurFade>
+          <div className="flex flex-wrap gap-1 select-none">
+            {DATA.skills?.map((skill, id) => {
+              const icons = require("@/lib/skill-icons");
+              const Icon = icons.skillIcons[skill.icon];
+              return (
+                <BlurFade
+                  key={skill.name}
+                  delay={BLUR_FADE_DELAY * 10 + id * 0.05}
+                >
+                  <Badge>
+                    {Icon && (
+                      <Icon
+                        style={{
+                          marginRight: 4,
+                          verticalAlign: "bottom",
+                          width: 14,
+                          height: 14,
+                          display: "inline-block",
+                          overflow: "visible",
+                        }}
+                      />
+                    )}
+                    {skill.name}
+                  </Badge>
+                </BlurFade>
+              );
+            })}
+          </div>
+        </div>
+      </section> */}
+      <section id="projects">
+        <div className="space-y-12 w-full py-12">
+          <BlurFade delay={BLUR_FADE_DELAY * 11}>
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <div
+                  className="inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm border transition-all duration-200"
+                  style={getThemeBorderStyle()}
+                >
+                  Projects
+                </div>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  Check out our work
+                </h2>
+                <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                  We&apos;ve worked on a variety of projects, ranging from small
+                  personal endeavors to large-scale applications. Here are some
+                  highlights of our recent work.
+                </p>
+              </div>
+            </div>
+          </BlurFade>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 max-w-[800px] mx-auto">
+            {DATA.projects.map((project, id) => (
+              <BlurFade
+                key={project.title}
+                delay={BLUR_FADE_DELAY * 12 + id * 0.05}
+              >
+                <ProjectCard
+                  href={project.href}
+                  key={project.title}
+                  title={project.title}
+                  description={project.description}
+                  // dates={project.dates}
+                  tags={project.technologies}
+                  image={project.image}
+                  video={project.video}
+                  links={project.links}
+                />
+              </BlurFade>
+            ))}
+          </div>
+        </div>
+      </section>
+      <section id="team">
+        <div className="space-y-12 w-full py-12">
+          <BlurFade delay={BLUR_FADE_DELAY * 16}>
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  People behind{" "}
+                  <SparklesText
+                    colors={{
+                      first: "#ffffff",
+                      second: "#9ca3af",
+                    }}
+                    sparklesCount={10}
+                  >
+                    nxyy.space
+                  </SparklesText>
+                </h2>
+                <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                  Meet the talented individuals who power our innovative
+                  solutions and bring ideas to life.
+                </p>
+              </div>
+            </div>
+          </BlurFade>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-w-3xl mx-auto">
+            {[...TEAM_MEMBERS]
+              .sort((a, b) => {
+                const aPresence = teamPresences[a.discordId];
+                const bPresence = teamPresences[b.discordId];
 
-		fetchStatus();
-		const interval = setInterval(fetchStatus, 60000);
-		return () => clearInterval(interval);
-	}, []);
+                if (aPresence && !bPresence) return -1;
+                if (!aPresence && bPresence) return 1;
 
-	const scrollToSection = (sectionId: string) => {
-		const element = document.getElementById(sectionId);
-		if (element) {
-			element.scrollIntoView({ behavior: "smooth" });
-		}
-	};
+                const aName =
+                  aPresence?.discord_user?.display_name ||
+                  aPresence?.discord_user?.global_name ||
+                  aPresence?.discord_user?.username ||
+                  a.name;
+                const bName =
+                  bPresence?.discord_user?.display_name ||
+                  bPresence?.discord_user?.global_name ||
+                  bPresence?.discord_user?.username ||
+                  b.name;
 
-	return (
-		<div className={styles.container}>
-			<Navbar scrollToSection={scrollToSection} />
-			<div className={styles.gridBackground} />
-			<div className={styles.content}>
-				<motion.main
-					id="home"
-					className={styles.hero}
-					initial={{ opacity: 0, y: -20 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5 }}
-				>
-					<h1>Welcome to nxyy.space</h1>
-                    <p>The hub for projects and resources.</p>
-				</motion.main>
-
-				<div className={styles.sectionDivider} />
-
-				<section id="projects" className={styles.projects}>
-					<h2>Our Projects</h2>
-					<div className={styles.projectGrid}>
-						<motion.div
-							className={styles.projectCard}
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							whileHover={{ scale: 1.05 }}
-							viewport={{ once: true, amount: 0.5 }}
-							transition={{ duration: 0.5, delay: 0.2 }}
-						>
-							<div className={styles.projectImage}>
-								<img src="/images/e-girls.png" className={styles.projectImg} />
-							</div>
-							<div className={styles.projectContent}>
-								<h3>e-girls.host</h3>
-								<p>A simple and elegant image host.</p>
-								<p>
-									Users:{" "}
-									{projectStats["e-girls"]?.users?.toLocaleString() ||
-										"Loading..."}
-								</p>
-								<p>
-									Used Storage:{" "}
-									{projectStats["e-girls"]?.used_storage?.toLocaleString() ||
-										"Loading..."}{" "}
-									GB
-								</p>
-								<a href="https://e-girls.host" className={styles.projectLink}>
-									Visit Website
-								</a>
-							</div>
-						</motion.div>
-						<motion.div
-							className={styles.projectCard}
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							whileHover={{ scale: 1.05 }}
-							viewport={{ once: true, amount: 0.5 }}
-							transition={{ duration: 0.5, delay: 0.4 }}
-						>
-							<div className={styles.projectImage}>
-								<img src="/images/warm.jpg" className={styles.projectImg} />
-							</div>
-							<div className={styles.projectContent}>
-								<h3>warm.lat</h3>
-								<p>A extensive yet simple Discord bot.</p>
-								<p>Servers: {projectStats["warm"]?.servers || "Loading..."}</p>
-								<p>Users: {projectStats["warm"]?.users || "Loading..."}</p>
-								<a href="https://warm.lat" className={styles.projectLink}>
-									Visit Website
-								</a>
-							</div>
-						</motion.div>
-					</div>
-				</section>
-
-				<div className={styles.sectionDivider} />
-				<section id="team" className={styles.team}>
-					<h2>Our Team</h2>
-					<div className={styles.teamGrid}>
-						{teamMembers.map((member, index) => (
-							<TeamMemberCard
-								key={member.id}
-								member={member}
-								index={index}
-								onClick={() => setSelectedMember(member)}
-							/>
-						))}
-					</div>
-				</section>
-
-				<div className={styles.sectionDivider} />
-
-				<section id="contact" className={styles.contact}>
-					<h2>Contact Us</h2>
-					<p>
-						The best way to get in touch is through our{" "}
-						<a
-							href="https://discord.gg/your-server"
-							className={styles.discordLink}
-						>
-							Discord server
-						</a>
-						.
-					</p>
-				</section>
-			</div>
-
-			{selectedMember && (
-				<TeamModal
-					member={selectedMember}
-					onClose={() => setSelectedMember(null)}
-				/>
-			)}
-		</div>
-	);
+                return aName.localeCompare(bName);
+              })
+              .map((member, id) => (
+                <BlurFade
+                  key={member.id}
+                  delay={BLUR_FADE_DELAY * 17 + id * 0.1}
+                >
+                  <TeamMemberCard
+                    member={member}
+                    presence={teamPresences[member.discordId] || null}
+                  />
+                </BlurFade>
+              ))}
+          </div>
+        </div>
+      </section>
+      <Footer />
+    </main>
+  );
 }
